@@ -1,0 +1,7 @@
+data.db
+venv/
+tests.py
+web/.idea
+.idea
+web/.nuxt
+web/node_modules
