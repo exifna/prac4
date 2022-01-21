@@ -19,6 +19,8 @@ def generatePlayer(game_id: str, nick: str, session = session) -> Player:
     session.add(player)
     return player
 
+def changePlayerBalance(gmae_id:str, token: str, count: int, session = session)
+
 
 def create_game(creator_nick: str, game_type: int, session = session) -> list:
     game_id = faker.Faker().md5()[:8]

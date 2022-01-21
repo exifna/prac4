@@ -13,6 +13,7 @@ class GameObj:
         self.game_type = game_type
         self.nowPlayer : Player = None
         self.month = 0
+        self.level = 2
         self.end = False
 
         # -- действия -- #
@@ -37,6 +38,7 @@ class GameObj:
     def startGame(self):
         crud.start_game(self.game_id)
         self.start = True
+        self.run()
 
     def get_my_step(self, secret_token : str) -> str:
 
@@ -72,7 +74,7 @@ class GameObj:
     def find_user(self, token : str) -> Player:
         for i in self.players:
             if i.secret_token == token:
-                return Player
+                return i
 
     def _get_level_data(self):
         pass
@@ -80,19 +82,22 @@ class GameObj:
     def _run(self):
         self.nowPlayer = self.players[0]
         while True:
+            self.month += 1
             for player in self.players:
                 self.last_step_time = time.time()
                 self.nowPlayer = player
 
-                while time.time() - self.last_step_time < 2:
+                while time.time() - self.last_step_time < 30:
                     sleep(0.1)
 
-
-
-            self.month += 1
 
             if self.game_type == GameType.months and self.month == 12:
                 self.end = True
                 return
+
+            for player in self.players:
+                player.balance -= 300 * player.material
+                player.balance -= 500 * player.flighters
+                player.balance -= 1000 * player.workshops
 
             sleep(0.5)

@@ -16,14 +16,18 @@
       </span>
       <br v-if="wait_game">
 
-      <i class="el-icon-link"/>
+      <i class="el-icon-share"/>
       <span class="font-bold">Код для подключения: <span @click="copyText(game_id)">{{ game_id }}</span>, ссылка для подключения: <span @click="copyText('localhost:3000/invite?id=' + game_id)">localhost:3000/invite?id={{game_id}}</span></span>
-
       <br>
       <hr>
-      <i class="el-icon-view"/>
-      <span>Тип игры: {{gameType}}</span>
-      <br>
+      <div style="width: 100%">
+        <span style="float: left">> Тип игры: {{gameType}}</span>
+        <span style="float: right">Времени до конца хода: {{timeOut}} с <</span>
+        <br>
+        <span style="float: left">> Месяц: {{month}}</span>
+        <span style="float: right">Уровень: {{level}} <</span>
+        <br>
+      </div>
       <i class="el-icon-user-solid"/>
       <span>Игроков: {{players.length}}</span>
       <br>
@@ -37,6 +41,17 @@
       </template>
 
       <hr>
+      <i class="el-icon-info"/>
+      <span>Моё состояние</span>
+      <br>
+      <br>
+      <div class="me_info" style="width: 100%">
+        <span style="float: left" type="flex">Баланс: {{this.me.balance}}</span>
+        <span style="float: right" type="flex">Сырья: {{this.me.material}}</span>
+        <br>
+        <span style="float: left" type="flex">Цехов: {{this.me.workshops}}</span>
+        <span style="float: right" type="flex">Истрибителей: {{this.me.flighters}}</span>
+      </div>
 
 
     </el-form>
@@ -53,7 +68,13 @@ export default {
     const run_game_button = false
     const players = [];
     const gameType = "";
+    const month = 0
+    const timeOut = 30;
     const parse_error = false;
+    const step = "";
+    const materialNalog = 0;
+    const level = 0;
+    const sales = false;
     const me = {
       balance : 0,
       workshops: 0,
@@ -62,7 +83,9 @@ export default {
     }
 
     setTimeout(this.updateData, 4000)
-    return {game_id, wait_game, run_game_button, players, token, gameType, parse_error}
+    setTimeout(this.changeTime, 1000)
+    return {game_id, wait_game, run_game_button, players, token, gameType, parse_error, me, level, month, timeOut,
+      materialNalog, step, sales}
   },
   async asyncData({$axios, route}){
     const url = "http://localhost:12001/check_run";
@@ -95,7 +118,6 @@ export default {
         "token" : this.$route.query.token,
         "game_id" : this.$route.query.id
       })
-      console.log(data)
       this.wait_game = data["wait"];
       this.players = await this.$axios.$post("http://localhost:12001/players", {"game_id" : this.$route.query.id})
 
@@ -114,7 +136,26 @@ export default {
       catch{
         this.parse_error = true;
       }
+
+      const game_data = await this.$axios.$post("http://localhost:12001/game", {"game_id" : this.$route.query.id})
+      this.level = game_data["level"]
+      this.month = game_data["month"]
+      const step_data = await this.$axios.$post("http://localhost:12001/get_event", {"game_id" : this.$route.query.id, "token": this.token})
+      this.step = step_data["step"]
+      if (this.step == "sales"){
+        this.sales = true;
+      }
+      else{
+        this.sales = false;
+      }
+      this.timeOut = step_data["seconds"]
       setTimeout(this.updateData, 4000)
+    },
+    changeTime(){
+      if (this.timeOut != 30){
+        this.timeOut -= 1;
+      }
+      setTimeout(this.changeTime, 1000)
     }
   }
 }

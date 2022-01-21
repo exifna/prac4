@@ -1,3 +1,4 @@
+import time
 from typing import Dict
 from flask_cors import CORS
 from flask import Flask, jsonify, request
@@ -18,7 +19,6 @@ def create_game():
     game_obj = GameObj(game.game_id, game_type)
     games[game.game_id] = game_obj
     game_obj.addPlayes(admin)
-    game_obj.run()
     return jsonify({
         'game_id' : game.game_id,
         'secret_token' : game.creator_token
@@ -55,6 +55,7 @@ def run_game():
     global games
     game = games[game_id]
     game.startGame()
+
     return jsonify({'success' : True})
 
 @app.post("/check_run")
@@ -63,6 +64,14 @@ def check_run():
     game_id = request.json['game_id']
     return {'run_button': crud.check_run_game(game_id, token),
             'wait': crud.check_wait(game_id)}
+
+@app.post("/game")
+def get_level():
+    global games
+    return jsonify({
+        'level' : games[request.json['game_id']].level,
+        'month' : games[request.json['game_id']].month
+    })
 
 @app.post('/me')
 def get_me():
@@ -74,13 +83,14 @@ def get_me():
     if not player:
         return jsonify(success = False)
 
-    return jsonify({
+    result = {
         'balance' : player.balance,
         'workshops' : player.workshops,
         'flighters' : player.flighters,
         'material' : player.material,
         'success': True
-    })
+    }
+    return jsonify(result)
 
 @app.post('/get_event')
 def get_player_event():
@@ -88,8 +98,11 @@ def get_player_event():
     game_id = request.json['game_id']
     token = request.json['token']
     game = games[game_id]
-    return jsonify({'step' : game.get_my_step(token),
-                    'month' : game.month})
+    data = game.get_my_step(token)
+    temp_time = None
+    if data in ["go", "sales", "work", "aviasales", "build"]:
+        temp_time = 30 - int(time.time() - game.last_step_time)
+    return jsonify({'step' : data, 'seconds' : temp_time or 30})
 
 @app.post('/game_type')
 def get_game_type():
