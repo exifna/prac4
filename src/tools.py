@@ -76,6 +76,10 @@ class GameObj:
             if i.secret_token == token:
                 return i
 
+    def buy_flighter(self, token: str, count: int):
+        player = crud.get_player(self.game_id, token)
+
+
     def _get_level_data(self):
         pass
 
@@ -96,8 +100,11 @@ class GameObj:
                 return
 
             for player in self.players:
-                player.balance -= 300 * player.material
-                player.balance -= 500 * player.flighters
-                player.balance -= 1000 * player.workshops
+                balance = player.balance
+                balance -= 300 * player.material
+                balance -= 500 * player.flighters
+                balance -= 1000 * player.workshops
+                crud.changePlayerBalance(self.game_id, player.secret_token, balance)
+                player.balance = balance
 
             sleep(0.5)

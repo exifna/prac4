@@ -1,9 +1,17 @@
+from typing import Optional
+
 import faker
 
 from src.database import session
 from src.tables import *
 
 
+
+class LevelDataClass:
+    level1: {
+        'flighterBuyPrice': 1,
+
+    }
 
 def generatePlayer(game_id: str, nick: str, session = session) -> Player:
     token = faker.Faker().md5()
@@ -19,7 +27,23 @@ def generatePlayer(game_id: str, nick: str, session = session) -> Player:
     session.add(player)
     return player
 
-def changePlayerBalance(gmae_id:str, token: str, count: int, session = session)
+def changePlayerBalance(game_id:str, token: str, count: int, session = session):
+    player = session.query(Player).filter(Player.game_id == game_id).filter(Player.secret_token == token).one()
+    player.balance = count
+    session.commit()
+
+def get_player(game_id: str, token: str, session = session) -> Player:
+    return session.query(Player).filter(Player.game_id == game_id).filter(Player.secret_token == token).one_or_none()
+
+
+def get_level_data(level: int) ->
+
+def but_flighter(game_id: str, token: str, session = session) -> Optional[bool]:
+    player = get_player(game_id, token)
+    if not player or player.flighters >= 6:
+        return False
+
+    if
 
 
 def create_game(creator_nick: str, game_type: int, session = session) -> list:
